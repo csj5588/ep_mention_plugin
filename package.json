@@ -1,6 +1,6 @@
 {
   "name": "ep_mention_plugin",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "etherpad mention plugin",
   "author": {
     "name": "cuishijie",
@@ -10,6 +10,7 @@
   "contributors": [
     ""
   ],
+  "license": "MIT",
   "keywords": [
     "etherpad",
     "plugin",
@@ -27,9 +28,7 @@
     "type": "individual",
     "url": "https://etherpad.org/"
   },
-  "dependencies": {
-    "MODULE": "0.3.20"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "ep_etherpad_lite":">=1.8.6"
   },

@@ -311,7 +311,7 @@ exports.aceCreateDomLine = (hookName, context) => {
 exports.acePostWriteDomLineHTML = function (hook_name, args, cb) {
 }
 
-exports.aceEditorCSS = () => ['ep_ice_hyperlinks/static/css/style.css'];
+exports.aceEditorCSS = () => ['ep_mention_plugin/static/css/style.css'];
 
 exports.aceEditEvent = function(hookName, call) {
   // If it's not a click or a key event and the text hasn't changed then do nothing

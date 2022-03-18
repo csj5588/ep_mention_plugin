@@ -1,6 +1,6 @@
 {
   "name": "ep_mention_plugin",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "etherpad mention plugin",
   "author": {
     "name": "cuishijie",
@@ -30,7 +30,7 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "ep_etherpad_lite":">=1.8.6"
+    "ep_etherpad_lite":">=1.4.0"
   },
   "devDependencies": {
     "eslint": "^7.18.0",

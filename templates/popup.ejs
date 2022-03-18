@@ -1,0 +1,41 @@
+<div class="popup acl-write hyperlink-dialog popup toolbar-popup ice-hyperlink-container">
+  <div class="hyperlink-container popup-content ice-popup-content">
+    <input type="text" class="hyperlink-text" placeholder="文本"/>
+    <div class="ice-hyperlink-content">
+      <input type="text" class="hyperlink-url" placeholder="粘贴或输入地址"/>
+      <button type="button" class="btn btn-primary hyperlink-save ice-hyperlink-save">确定</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .hyperlink-dialog {
+    max-width: 300px;
+  }
+  .ice-popup-content{
+    padding:10px!important;
+  }
+  .ice-hyperlink-container{
+    display: flex;
+    flex-direction: column;
+  }
+  .ice-hyperlink-content{
+    display: flex;
+     justify-content: space-between;
+  }
+  .ice-hyperlink-container .hyperlink-url{
+    width:200px!important;
+    /* margin-top: 10px!important; */
+  }
+  .hyperlink-text{
+    margin-bottom: 10px;
+    margin-top: 0!important;
+  }
+  .ice-hyperlink-save{
+    background-color: #2196f3;
+  }
+  .hyperlink-url {
+    margin: 0 5px 0 0 !important;
+  }
+
+</style>

@@ -1,0 +1,35 @@
+.mention-list {
+  display: flex;
+  flex-direction: column!important;
+  align-items: start!important;
+  width: 130px;
+  max-height: 200px;
+  min-height: 100px;
+  border: 1px solid #a9a9a9;
+  border-radius: 5px;
+  box-shadow: 0px 4px 11px #000;
+  overflow-y: auto!important;
+}
+
+.mention-list li {
+  transition: background 0.3s;
+  border-top: 1px solid #f5f5f5;
+  margin: 0!important;
+  width: 100%;
+  padding: 5px;
+}
+
+.mention-list li:hover {
+  background: #f5f5f5;
+  cursor: pointer;
+}
+.mention-name{
+  background: #3370ff;
+  color: #ffffff!important;
+  padding: 1px 4px;
+  border-radius: 15px;
+  text-decoration: none;
+}
+.mention-list-empty-text{
+  color: #858585;
+}

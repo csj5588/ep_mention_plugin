@@ -16,7 +16,12 @@ const DEFAULTREP = {
 const mentionRef = {
   hide: () => {
     const inlineToolbar = $('#mention_container');
-    inlineToolbar.css({ 'display': 'none' });
+    /**
+     * 添加淡入淡出效果
+     */
+    inlineToolbar.animate({ 'opacity': '0', 'marginTop': '10px' }, 200, 'swing', function() {
+      inlineToolbar.css('display', 'none')
+    })
     /**
      * 初始化mentionState.rep
      */
@@ -25,7 +30,11 @@ const mentionRef = {
   },
   show: () => {
     const inlineToolbar = $('#mention_container');
-    inlineToolbar.css({ 'display': 'block' });
+    /**
+     * 添加淡入淡出效果
+     */
+    inlineToolbar.css('display', 'block')
+    inlineToolbar.animate({ 'opacity': '1', 'marginTop': '0' }, 200, 'swing')
 
     /**
      * 同步mention状态

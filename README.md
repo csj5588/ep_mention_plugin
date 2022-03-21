@@ -12,13 +12,12 @@ etherpad-lite mention 组件
 5. 模糊搜索相关逻辑填写
 6. 多行mention定位
 7. aceInit填充初始mention
+8. 动画过渡
+9. 样式优化
 
 ## Undo
 
-- 请求封装
-- 动画过渡
 - 滑动分页
-- 样式优化
 - @人的时候带上第几行位置信息，好滚动到这里
 
 ## Problem

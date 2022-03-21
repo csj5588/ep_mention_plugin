@@ -2,6 +2,7 @@ const {
   getListBySnippet,
   getListAndFillList,
   resetListAndFillList,
+  getCurrentList,
 } = require('./model');
 
 /**
@@ -56,6 +57,7 @@ const mentionState = {
 exports.aceInitialized = function(hook, context) {
   /**
    * 绑定填充mention信息方法
+   * @remark 发送请求的话，这里是个不错的地方
    */
   var editorInfo = context.editorInfo;
 
@@ -74,7 +76,13 @@ exports.aceInitialized = function(hook, context) {
  */
 exports.postAceInit = (hookName, context) => {
   const padOuter = $('iframe[name="ace_outer"]').contents().find('body');
+  const padOuterHTML = $('iframe[name="ace_outer"]').contents().find('html');
   const padInner = padOuter.contents('iframe').contents().find('body');
+
+  const padOuterOffsetTop = $('iframe[name="ace_outer"]').offset().top;
+  const innerOffsetLeft = padOuter.find('iframe').offset().left;
+  const innerOffsetTop = padOuter.find('iframe').offset().top;
+  const toolbar = $('#inline_toolbar')
 
   /**
    * @postAceInit1
@@ -82,19 +90,13 @@ exports.postAceInit = (hookName, context) => {
    */
   context.ace.callWithAce((ace) => {
     ace.ace_setOnKeyDown((event) => {
-      const { key, code, altKey, shiftKey, metaKey, ctrlKey } = event.originalEvent;
-      // console.log('mention: event', event)
+      const { key, keyCode, altKey, shiftKey, metaKey, ctrlKey } = event.originalEvent;
 
       /**
        * @keyboard
        * 监听mention按键触发，计算光标位置
        */
       if (key === '@') {
-        const padOuterOffsetTop = $('iframe[name="ace_outer"]').offset().top;
-        const innerOffsetLeft = padOuter.find('iframe').offset().left;
-        const innerOffsetTop = padOuter.find('iframe').offset().top;
-        const toolbar = $('#inline_toolbar')
-
         // console.log('event.currentTarget.createRange', event.currentTarget.createRange)
         // console.log('event.view', event.view.document.createRange)
         // console.log('event.view', event.view.getSelection())
@@ -111,17 +113,38 @@ exports.postAceInit = (hookName, context) => {
         
         /**
          * 创建边界矩形，添加当前seleciton，计算当前光标位置
+         * rangeEnd处理开头行及前方文字为空格的场景
+         * @remark 这样的场景Rect无法正常创建，需借用at符号的位置，所以rangeEnd + 1;
          */
-        const range = event.currentTarget.createRange();
-        range.setStart(selection.anchorNode, selection.anchorOffset)
-        range.setEnd(selection.anchorNode, selection.anchorOffset)
-        const clientRect = range.getBoundingClientRect();
 
-        toolbar.css({
-          position: 'absolute',
-          left: innerOffsetLeft + clientRect.x + 54,
-          top: padOuterOffsetTop + innerOffsetTop + clientRect.y + 50,
-        });
+        console.log('selection', selection)
+        console.log('ace.ace_getRep()', ace.ace_getRep())
+        const range = event.currentTarget.createRange();
+        const rangeStart = selection.anchorOffset;
+        const rangeEnd = selection.anchorOffset === 0 ? selection.anchorOffset + 1 : selection.anchorOffset
+
+        range.setStart(selection.anchorNode, rangeStart)
+        try {
+          range.setEnd(selection.anchorNode, rangeEnd)
+
+          const clientRect = range.getBoundingClientRect();
+
+          toolbar.css({
+            position: 'absolute',
+            left: innerOffsetLeft + clientRect.x + 50,
+            top: padOuterOffsetTop + innerOffsetTop + clientRect.y + 45 - padOuterHTML[0].scrollTop,
+          });
+        } catch(e) {
+          range.setEnd(selection.anchorNode, rangeEnd - 1)
+
+          const clientRect = range.getBoundingClientRect();
+
+          toolbar.css({
+            position: 'absolute',
+            left: innerOffsetLeft + clientRect.x + 64,
+            top: padOuterOffsetTop + innerOffsetTop + clientRect.y + 60 - padOuterHTML[0].scrollTop,
+          });
+        }
 
         /**
          * 展示mention弹窗
@@ -161,6 +184,17 @@ exports.postAceInit = (hookName, context) => {
 
       /**
        * @keyboard
+       * 监听space
+       * 当mention弹窗状态为展开，则关闭弹窗
+       * @remark 输入法空格keyCode为229
+       */
+      if (keyCode === 32 && mentionState.mentionBubbled) {
+        mentionRef.hide();
+        return;
+      };
+
+      /**
+       * @keyboard
        * 👼模糊搜索相关字段收集
        * 这里根据输入的值与光标的rep拆解allText来进行解析。
        * @remark mentionState.mentionBubbled
@@ -195,6 +229,35 @@ exports.postAceInit = (hookName, context) => {
         
       }
     })
+
+    /**
+     * onKeyPress监听，进行按键拦截
+     * 1、拦截Enter按键（keyCode13）
+     */
+    ace.ace_setOnKeyPress((event) => {
+      const { keyCode } = event.originalEvent;
+      /**
+       * 如果mention弹窗存在才进行Enter拦截
+       * 如果mention列表中无数据，则关闭弹窗
+       * 如果mention列表中有数据，则进行数据填充
+       * 
+       * 上下左右按键的时候进行拦截（hold on）
+       */
+      if (mentionState.mentionBubbled && keyCode === 13) {
+        const currentMentionList = getCurrentList();
+        const isCurrentMentionListEmpty = currentMentionList.length === 0;
+        if (isCurrentMentionListEmpty) {
+          mentionRef.hide();
+        } else {
+          // 目前只插入第一个，当做上下按键拦截的时候，再来修改这里。
+          insertMentionInfoToAce({ mentionName: currentMentionList[0] })
+
+          mentionRef.hide();
+        }
+        return false;
+      }
+      return true;
+    });
   });
 
   /**
@@ -206,33 +269,41 @@ exports.postAceInit = (hookName, context) => {
      * 获取点击的人名及相关信息
      */
     const mentionName = $(this).text();
+    
+    insertMentionInfoToAce({ mentionName })
+
+    mentionRef.hide();
+  });
+
+  /**
+   * @method 将mention相关信息插入到@ 符号后面
+   * 1、替换@ 后面文字
+   * 2、计算需要转变的新rep范围
+   * 3、添加自定义Attribute
+   * 4、关闭弹窗
+   * 5、模糊搜索中的key关键字范围也需覆盖
+   */
+  insertMentionInfoToAce = (info = {}) => {
     const mentionInfo = {
-      mentionName,
+      mentionName = '',
+      ...info,
     }
-    /**
-     * 1、替换@ 后面文字
-     * 2、计算需要转变的新rep范围
-     * 3、添加自定义Attribute
-     * 4、关闭弹窗
-     * 5、模糊搜索中的key关键字范围也需覆盖
-     */
+
     context.ace.callWithAce((ace) => {
       const rep = ace.ace_getRep();
       const { selEnd } = rep;
 
       const { selStart: prevSelStart, selEnd: prevSelEnd } = mentionState.rep;
 
-      ace.ace_performDocumentReplaceRange(prevSelStart, selEnd, mentionName + ' ')
+      ace.ace_performDocumentReplaceRange(prevSelStart, selEnd, mentionInfo.mentionName + ' ')
       
       const mentionSelStart = [prevSelStart[0], prevSelStart[1] - 1];
-      const mentionSelEnd = [prevSelEnd[0], prevSelEnd[1] + mentionName.length];
+      const mentionSelEnd = [prevSelEnd[0], prevSelEnd[1] + mentionInfo.mentionName.length];
 
       ace.ace_fillWithMentionInfo(mentionInfo, mentionSelStart, mentionSelEnd)
 
     }, 'insertMention', true)
-
-    mentionRef.hide();
-  });
+  }
 
   /**
    * @postAceInit3

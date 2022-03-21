@@ -18,8 +18,11 @@ const mentionRef = {
     const inlineToolbar = $('#mention_container');
     /**
      * 添加淡入淡出效果
+     * 动画完毕并且节点没有被移除之前，初始化数据相关
+     * 1. 初始化-列表滚动到头部
      */
     inlineToolbar.animate({ 'opacity': '0', 'marginTop': '10px' }, 200, 'swing', function() {
+      $('#inline_mention').scrollTop(0);
       inlineToolbar.css('display', 'none')
     })
     /**
@@ -126,8 +129,6 @@ exports.postAceInit = (hookName, context) => {
          * @remark 这样的场景Rect无法正常创建，需借用at符号的位置，所以rangeEnd + 1;
          */
 
-        console.log('selection', selection)
-        console.log('ace.ace_getRep()', ace.ace_getRep())
         const range = event.currentTarget.createRange();
         const rangeStart = selection.anchorOffset;
         const rangeEnd = selection.anchorOffset === 0 ? selection.anchorOffset + 1 : selection.anchorOffset

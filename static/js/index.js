@@ -15,7 +15,7 @@ const DEFAULTREP = {
 
 const mentionRef = {
   hide: () => {
-    const inlineToolbar = $('#inline_toolbar');
+    const inlineToolbar = $('#mention_container');
     inlineToolbar.css({ 'display': 'none' });
     /**
      * 初始化mentionState.rep
@@ -24,7 +24,7 @@ const mentionRef = {
     mentionState.mentionBubbled = false;
   },
   show: () => {
-    const inlineToolbar = $('#inline_toolbar');
+    const inlineToolbar = $('#mention_container');
     inlineToolbar.css({ 'display': 'block' });
 
     /**
@@ -82,7 +82,7 @@ exports.postAceInit = (hookName, context) => {
   const padOuterOffsetTop = $('iframe[name="ace_outer"]').offset().top;
   const innerOffsetLeft = padOuter.find('iframe').offset().left;
   const innerOffsetTop = padOuter.find('iframe').offset().top;
-  const toolbar = $('#inline_toolbar')
+  const toolbar = $('#mention_container')
 
   /**
    * @postAceInit1

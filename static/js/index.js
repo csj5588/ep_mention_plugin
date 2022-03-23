@@ -16,12 +16,14 @@ const DEFAULTREP = {
 const mentionRef = {
   hide: () => {
     const inlineToolbar = $('#mention_container');
+    const hasMobileLayout = $('body').hasClass('mobile-layout');
     /**
      * 添加淡入淡出效果
      * 动画完毕并且节点没有被移除之前，初始化数据相关
      * 1. 初始化-列表滚动到头部
      */
-    inlineToolbar.animate({ 'opacity': '0', 'marginTop': '10px' }, 200, 'swing', function() {
+    const moveAnimate = hasMobileLayout ? { 'bottom': '43px' } : {'marginTop': '10px'};
+    inlineToolbar.animate({ 'opacity': '0', ...moveAnimate }, 200, 'swing', function() {
       $('#inline_mention').scrollTop(0);
       inlineToolbar.css('display', 'none')
     })
@@ -33,11 +35,13 @@ const mentionRef = {
   },
   show: () => {
     const inlineToolbar = $('#mention_container');
+    const hasMobileLayout = $('body').hasClass('mobile-layout');
     /**
      * 添加淡入淡出效果
      */
+    const moveAnimate = hasMobileLayout ? { 'bottom': '53px' } : {'marginTop': '0px'};
     inlineToolbar.css('display', 'block')
-    inlineToolbar.animate({ 'opacity': '1', 'marginTop': '0' }, 200, 'swing')
+    inlineToolbar.animate({ 'opacity': '1', ...moveAnimate }, 200, 'swing')
 
     /**
      * 同步mention状态
@@ -75,7 +79,7 @@ exports.aceInitialized = function(hook, context) {
 
   editorInfo.ace_fillWithMentionInfo = (info, selStart, selEnd) => {
     const {documentAttributeManager} = context;
-    console.log('documentAttributeManager', documentAttributeManager)
+    console.log('mention[documentAttributeManager]: ', documentAttributeManager)
     if (!info.mentionName) return;
 
     const newMention = [`mention-name:${info.mentionName}`, info.mentionName];
@@ -127,7 +131,9 @@ exports.postAceInit = (hookName, context) => {
          * 创建边界矩形，添加当前seleciton，计算当前光标位置
          * rangeEnd处理开头行及前方文字为空格的场景
          * @remark 这样的场景Rect无法正常创建，需借用at符号的位置，所以rangeEnd + 1;
+         * @remark 移动端不处理位置计算
          */
+        const hasMobileLayout = $('body').hasClass('mobile-layout');
 
         const range = event.currentTarget.createRange();
         const rangeStart = selection.anchorOffset;
@@ -139,21 +145,31 @@ exports.postAceInit = (hookName, context) => {
 
           const clientRect = range.getBoundingClientRect();
 
-          toolbar.css({
+          const toolbarCss = hasMobileLayout ? {
             position: 'absolute',
-            left: innerOffsetLeft + clientRect.x + 50,
             top: padOuterOffsetTop + innerOffsetTop + clientRect.y + 45 - padOuterHTML[0].scrollTop,
-          });
+          } : {
+            position: 'absolute',
+            left: hasMobileLayout ? 0 : innerOffsetLeft + clientRect.x + 50,
+            top: padOuterOffsetTop + innerOffsetTop + clientRect.y + 45 - padOuterHTML[0].scrollTop,
+          }
+
+          toolbar.css(toolbarCss);
         } catch(e) {
           range.setEnd(selection.anchorNode, rangeEnd - 1)
 
           const clientRect = range.getBoundingClientRect();
 
-          toolbar.css({
+          const toolbarCss = hasMobileLayout ? {
             position: 'absolute',
-            left: innerOffsetLeft + clientRect.x + 64,
+            top: padOuterOffsetTop + innerOffsetTop + clientRect.y + 45 - padOuterHTML[0].scrollTop,
+          } : {
+            position: 'absolute',
+            left: hasMobileLayout ? 0 : innerOffsetLeft + clientRect.x + 64,
             top: padOuterOffsetTop + innerOffsetTop + clientRect.y + 60 - padOuterHTML[0].scrollTop,
-          });
+          }
+
+          toolbar.css(toolbarCss);
         }
 
         /**

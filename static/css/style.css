@@ -38,3 +38,16 @@
   padding: 5px;
   color: #858585;
 }
+@media (max-width: 800px) {
+  #mention_container{
+    width: 93%;
+    position: absolute;
+    top: unset;
+    bottom: 43px;
+    right: 1rem;
+    left: 1rem;
+  }
+  .mention-list{
+    width: 100%;
+  }
+}

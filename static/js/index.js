@@ -98,6 +98,8 @@ exports.postAceInit = (hookName, context) => {
    * 绑定键盘事件，监听@ 的发生
    */
   context.ace.callWithAce((ace) => {
+    const hasMobileLayout = $('body').hasClass('mobile-layout');
+
     ace.ace_setOnKeyDown((event) => {
       const { key, keyCode, altKey, shiftKey, metaKey, ctrlKey } = event.originalEvent;
 
@@ -131,10 +133,10 @@ exports.postAceInit = (hookName, context) => {
         const rangeEnd = selection.anchorOffset === 0 ? selection.anchorOffset + 1 : selection.anchorOffset
 
         const posRep = ace.ace_getRep();
-        console.log('posRep', posRep, posRep.selStart, posRep.selEnd)
+
         // 暂时对第一位进行特殊处理，第一位加一些top，不知什么原因导致2022-3-28
         const firstSupplementTop = (posRep.selStart[0] === 0 && posRep.selEnd[0] === 0) && (posRep.selStart[1] === 0 && posRep.selEnd[1] === 0) ? 50 : 0
-        console.log('firstSupplementTop', firstSupplementTop)
+ 
         range.setStart(selection.anchorNode, rangeStart)
         try {
           range.setEnd(selection.anchorNode, rangeEnd)
@@ -143,7 +145,7 @@ exports.postAceInit = (hookName, context) => {
 
           toolbar.css({
             position: 'absolute',
-            left: innerOffsetLeft + clientRect.x + 50,
+            left: hasMobileLayout ? '3.5%' : innerOffsetLeft + clientRect.x + 50,
             top: padOuterOffsetTop + innerOffsetTop + clientRect.y + 45 - padOuterHTML[0].scrollTop + firstSupplementTop,
           });
         } catch(e) {
@@ -153,7 +155,7 @@ exports.postAceInit = (hookName, context) => {
 
           toolbar.css({
             position: 'absolute',
-            left: innerOffsetLeft + clientRect.x + 64,
+            left: hasMobileLayout ? '3.5%' : innerOffsetLeft + clientRect.x + 64,
             top: padOuterOffsetTop + innerOffsetTop + clientRect.y + 60 - padOuterHTML[0].scrollTop + firstSupplementTop,
           });
         }
